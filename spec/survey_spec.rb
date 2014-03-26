@@ -8,4 +8,6 @@ describe Survey do
     test_survey = Survey.create({ :name => 'foo' })
     test_survey.name.should eq 'Foo'
   end
+
+  it { should have_many :questions }
 end

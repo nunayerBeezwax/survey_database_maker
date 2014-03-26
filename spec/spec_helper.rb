@@ -5,6 +5,7 @@ require 'pg'
 require 'shoulda-matchers'
 
 require 'survey'
+require 'question'
 
 database_configurations = YAML::load(File.open('./db/config.yml'))
 ActiveRecord::Base.establish_connection(database_configurations['test'])
