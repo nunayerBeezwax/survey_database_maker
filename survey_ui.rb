@@ -3,6 +3,8 @@ require 'active_record'
 require './lib/survey'
 require './lib/question'
 require './lib/choice'
+require './lib/response'
+require './lib/taker'
 
 database_configurations = YAML::load(File.open('./db/config.yml'))
 ActiveRecord::Base.establish_connection(database_configurations['development'])
@@ -28,6 +30,12 @@ def menu
       add_question(nil)
     # when '+c'
       # add_choice(nil)
+    when 'lt'
+      list_takers
+    when '+t'
+      add_taker
+    when 'ts'
+      take_survey
     when 'x'
       puts 'Good-bye!'
     else
@@ -46,7 +54,10 @@ def print_options
        "Enter '+s' to add survey to catalog.",
        "Enter 'lq' to list questions in a survey.",
        "Enter '+q' to add a question to a survey.",
+       "Enter 'lt' to list survey participants.",
+       "Enter '+t' to add survey participant.",
        # "Enter '+c' to add an answer choice for a question.",
+       "Enter 'ts' to take a survey.",
        "Enter 'x' to exit."
 end
 
@@ -151,6 +162,40 @@ def add_choice(question, choice_number)
   else
     puts 'Failed to save answer choice!'
     add_choice(question, choice_number)
+  end
+end
+
+def list_takers
+  Taker.all.each do |taker|
+    puts "#{taker.name}"
+  end
+end
+
+def add_taker
+  name = prompt('Enter participant name')
+  new_taker = Taker.new({ :name => name })
+  if new_taker.save
+    puts "Added #{new_taker.name} to participant list."
+  else
+    puts 'Failed to add new participant!'
+    add_taker
+  end
+end
+
+def take_survey
+  taker_name = prompt('Enter your name')
+  taker = Taker.find_by_name(taker_name)
+  puts "Enter the name of the survey you would like to take"
+  survey_name = prompt('Survey name')
+  survey = Survey.find_by_name(survey_name)
+  survey.questions.each do |question|
+    puts "\t#{question.text}"
+    question.choices.each do |choice|
+      puts "\t#{choice.number}: #{choice.content}"
+    end
+    taker_choice = prompt('Enter the number of your choice').to_i
+    choice = (question.choices.select {|choice| choice.number == taker_choice}).first
+    new_response = Response.create({ :choice_id => choice.id, :taker_id => taker.id })
   end
 end
 

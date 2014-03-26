@@ -4,7 +4,7 @@ class Survey < ActiveRecord::Base
   validates :name, { :presence => true, :uniqueness => true }
   before_save :capitalize
 
-  has_many(:questions)
+  has_many :questions
 
 private
   def capitalize
