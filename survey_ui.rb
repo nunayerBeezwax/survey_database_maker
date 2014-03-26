@@ -36,6 +36,8 @@ def menu
       add_taker
     when 'ts'
       take_survey
+    when 'r'
+      show_results
     when 'x'
       puts 'Good-bye!'
     else
@@ -58,6 +60,7 @@ def print_options
        "Enter '+t' to add survey participant.",
        # "Enter '+c' to add an answer choice for a question.",
        "Enter 'ts' to take a survey.",
+       "Enter 'r' to see the results of a survey.",
        "Enter 'x' to exit."
 end
 
@@ -196,6 +199,19 @@ def take_survey
     taker_choice = prompt('Enter the number of your choice').to_i
     choice = (question.choices.select {|choice| choice.number == taker_choice}).first
     new_response = Response.create({ :choice_id => choice.id, :taker_id => taker.id })
+  end
+end
+
+def show_results
+  survey_name = prompt('Enter the name of the survey to see its results')
+  survey = Survey.find_by_name(survey_name)
+  survey.questions.each do |question|
+    puts "#{question.text}"
+    question.choices.each do |choice|
+      puts "#{choice.content}"
+      puts "#{choice.responses.count} people selected that choice, which constitutes"
+      puts "#{(choice.responses.count.to_f / question.total_responses.to_f) * 100}% of the participants."
+    end
   end
 end
 
