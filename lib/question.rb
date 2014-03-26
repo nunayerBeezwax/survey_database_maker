@@ -7,11 +7,12 @@ class Question < ActiveRecord::Base
 
   def total_responders
     total = 0
+    respondants = []
     self.choices.each do |choice|
-      total += choice.total_responses
-      total += (choice.responses.select(:taker_id).distinct.count)
-
+      choice.responses.each do |response|
+        respondants << response.taker_id
+      end
     end
-    total
+    total = respondants.uniq.count
   end
 end
