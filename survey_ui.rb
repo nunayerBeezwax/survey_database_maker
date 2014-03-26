@@ -196,9 +196,13 @@ def take_survey
     question.choices.each do |choice|
       puts "\t#{choice.number}: #{choice.content}"
     end
-    taker_choice = prompt('Enter the number of your choice').to_i
-    choice = (question.choices.select {|choice| choice.number == taker_choice}).first
-    new_response = Response.create({ :choice_id => choice.id, :taker_id => taker.id })
+    new_response = Response.create({ :taker_id => taker.id })
+    taker_choices = prompt('Enter the number(s) of all choices which apply')
+    taker_choices_array = taker_choices.split(' ')
+    taker_choices_array.each do |taker_choice|
+      choice = (question.choices.select {|choice| choice.number == taker_choice.to_i}).first
+      new_response.choices << choice
+    end
   end
 end
 
@@ -210,7 +214,7 @@ def show_results
     question.choices.each do |choice|
       puts "#{choice.content}"
       puts "#{choice.responses.count} people selected that choice, which constitutes"
-      puts "#{(choice.responses.count.to_f / question.total_responses.to_f) * 100}% of the participants."
+      puts "#{(choice.responses.count.to_f / question.total_responders.to_f) * 100}% of the participants."
     end
   end
 end
