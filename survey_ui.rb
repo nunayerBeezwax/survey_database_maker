@@ -2,6 +2,7 @@ require 'active_record'
 
 require './lib/survey'
 require './lib/question'
+require './lib/choice'
 
 database_configurations = YAML::load(File.open('./db/config.yml'))
 ActiveRecord::Base.establish_connection(database_configurations['development'])
@@ -25,6 +26,8 @@ def menu
       list_questions(nil)
     when '+q'
       add_question(nil)
+    # when '+c'
+      # add_choice(nil)
     when 'x'
       puts 'Good-bye!'
     else
@@ -43,14 +46,16 @@ def print_options
        "Enter '+s' to add survey to catalog.",
        "Enter 'lq' to list questions in a survey.",
        "Enter '+q' to add a question to a survey.",
+       # "Enter '+c' to add an answer choice for a question.",
        "Enter 'x' to exit."
 end
 
 def list_surveys
+  puts '** List of Surveys **'
   Survey.all.each do |survey|
-    puts survey.name
+    puts "\t#{survey.name}"
   end
-  puts "\n\n"
+  print '*'*21, "\n"
 end
 
 def add_survey
@@ -90,8 +95,13 @@ def list_questions(survey)
   end
 
   unless survey.nil?
+    puts "#{survey.name}"
     survey.questions.each do |question|
-      puts question.text
+      puts "\t#{question.text}"
+      question.choices.each do |choice|
+        puts "\t#{choice.number}: #{choice.content}"
+      end
+      puts
     end
     puts "\n\n"
   else
@@ -108,12 +118,19 @@ def add_question(survey)
     survey = Survey.find_by_name(survey_name)
   end
   unless survey.nil?
-    question = prompt('Enter the text of the first question as you want it ' +
+    question = prompt('Enter the text of the question as you want it ' +
                        'to appear on the survey')
     new_question = Question.new({:text => question})
     if new_question.save
       survey.questions << new_question
       puts 'Your question has been added.'
+      continue = nil
+      number = 1
+      until continue == 'n'
+        add_choice(new_question, number)
+        continue = prompt('Continue adding answer choices? (y/n)').downcase
+        number += 1
+      end
     else
       puts 'Failed to add new question!'
       new_question.errors.full_messages.each { |message| puts message }
@@ -122,6 +139,18 @@ def add_question(survey)
   else
     puts 'Failed to find survey with that name!'
     add_question(nil)
+  end
+end
+
+def add_choice(question, choice_number)
+  content = prompt('Enter text for answer choice')
+  new_choice = Choice.new({ :content => content, :number => choice_number })
+  if new_choice.save
+    question.choices << new_choice
+    puts
+  else
+    puts 'Failed to save answer choice!'
+    add_choice(question, choice_number)
   end
 end
 

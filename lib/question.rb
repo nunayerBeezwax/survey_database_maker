@@ -1,5 +1,6 @@
 require 'active_record'
 
 class Question < ActiveRecord::Base
-  belongs_to(:survey)
+  belongs_to :survey
+  has_many :choices
 end
