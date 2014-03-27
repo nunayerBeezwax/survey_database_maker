@@ -5,6 +5,7 @@ class Survey < ActiveRecord::Base
   before_save :capitalize
 
   has_many :questions
+  has_many :short_answers
 
 private
   def capitalize

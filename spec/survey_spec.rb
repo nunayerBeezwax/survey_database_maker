@@ -10,4 +10,5 @@ describe Survey do
   end
 
   it { should have_many :questions }
+  it { should have_many :short_answers }
 end
